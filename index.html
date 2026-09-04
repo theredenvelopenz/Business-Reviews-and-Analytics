@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review Funnel — Sign in</title>
+<style>
+  :root{
+    --ink:#2b2620; --paper:#faf7f2; --panel:#ffffff; --line:#e8e1d6;
+    --gold:#c8912b; --calm:#5c6b5a; --calm-bg:#eef1ec;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:var(--paper); color:var(--ink); font-family:var(--sans); padding:20px;
+  }
+  .card{
+    width:100%; max-width:340px; background:var(--panel); border:1px solid var(--line);
+    border-radius:14px; padding:28px 26px;
+  }
+  h1{
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+    font-weight:500; font-size:1.4rem; margin:0 0 4px; text-align:center;
+  }
+  .sub{ color:#6b6255; font-size:0.85rem; text-align:center; margin:0 0 22px; }
+  label{ display:block; font-size:0.8rem; font-weight:600; color:#4a453c; margin-bottom:5px; }
+  input{
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px;
+    font-family:var(--sans); font-size:0.92rem; background:#fcfbf9; margin-bottom:14px;
+  }
+  input:focus{ outline:2px solid var(--calm); outline-offset:1px; border-color:transparent; }
+  button{
+    width:100%; font-family:var(--sans); font-weight:600; font-size:0.95rem;
+    padding:11px; border:none; border-radius:8px; background:var(--gold); color:#fff; cursor:pointer;
+  }
+  .error{ color:#a4453c; font-size:0.82rem; text-align:center; margin:-6px 0 14px; min-height:1em; }
+</style>
+</head>
+<body>
+  <form class="card" id="loginForm">
+    <h1>Review funnel</h1>
+    <p class="sub">Admin sign in</p>
+
+    <label for="user">Username</label>
+    <input type="text" id="user" autocomplete="username" autofocus>
+
+    <label for="pass">Password</label>
+    <input type="password" id="pass" autocomplete="current-password">
+
+    <p class="error" id="error"></p>
+
+    <button type="submit">Sign in</button>
+  </form>
+
+<script>
+  // Basic front-end gate only — not real security. Anyone who views this
+  // page's source can see these credentials. Fine for keeping the admin
+  // page out of casual sight, not a substitute for a real login system.
+  const USERNAME = "admin";
+  const PASSWORD = "admin";
+
+  document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const user = document.getElementById('user').value.trim();
+    const pass = document.getElementById('pass').value;
+
+    if(user === USERNAME && pass === PASSWORD){
+      try{
+        sessionStorage.setItem('rf_admin_logged_in', '1');
+        if(sessionStorage.getItem('rf_admin_logged_in') !== '1'){
+          throw new Error('storage did not persist');
+        }
+      } catch(err){
+        document.getElementById('error').innerHTML =
+          'This browser is blocking local storage on this page — sign-in can\'t be remembered. ' +
+          'This usually happens when the file is opened directly (a file:// address) instead of ' +
+          'through a real web server. Try serving this folder (e.g. <code>npx serve .</code>) and ' +
+          'opening it via http://localhost instead.';
+        return;
+      }
+      window.location.href = 'admin.html';
+    } else {
+      document.getElementById('error').textContent = 'Incorrect username or password.';
+    }
+  });
+</script>
+</body>
+</html>

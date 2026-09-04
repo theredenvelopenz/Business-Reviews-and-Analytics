@@ -9,9 +9,10 @@
 <script>
   const STORAGE_KEY = "reviewFunnelBusinesses";
 
+  let storageBlocked = false;
   function loadBusinesses(){
     try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
-    catch(e){ return {}; }
+    catch(e){ storageBlocked = true; return {}; }
   }
 
   const BUSINESSES = loadBusinesses();
@@ -75,6 +76,21 @@
 </div>
 
 <script>
+  if(!business){
+    const card = document.getElementById('card');
+    if(storageBlocked){
+      card.innerHTML = '<p class="error">This browser is blocking local storage on this page, ' +
+        'so the review page can\'t read any saved businesses. This usually means the file was ' +
+        'opened directly (a file:// address) instead of through a real web server. Serve this ' +
+        'folder (e.g. <code>npx serve .</code>) and open it via http://localhost instead.</p>';
+    } else if(!bizId){
+      card.innerHTML = '<p class="error">This link is missing a business ID (no <code>?b=</code> in the URL).</p>';
+    } else {
+      card.innerHTML = '<p class="error">No business found for "' + escapeHtml(bizId) + '". ' +
+        'Check it was added on the admin page, and that this page and admin.html are hosted on the same site.</p>';
+    }
+  }
+
   if(business){
     document.getElementById('card').innerHTML = `
       <h1>How was your visit?</h1>

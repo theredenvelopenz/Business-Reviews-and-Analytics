@@ -48,7 +48,9 @@
 <body>
 <div class="wrap">
   <h1>Review funnel admin</h1>
-  <p class="lede">Add a business, then scan the code to test it before writing your NFC tag.</p>
+  <p class="lede">Add a business, then scan the code to test it before writing your NFC tag.
+    <a href="#" id="signOutLink" style="color:#6b6255;">Sign out</a>
+  </p>
 
   <div class="panel" id="formPanel">
     <h2 id="formTitle">Add a business</h2>
@@ -93,7 +95,30 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // Login guard — bounces back to index.html if not signed in this session.
+  try{
+    if(sessionStorage.getItem('rf_admin_logged_in') !== '1'){
+      window.location.href = 'index.html';
+    }
+  } catch(e){
+    document.write(
+      '<p style="font-family:sans-serif;max-width:480px;margin:60px auto;color:#a4453c;">' +
+      'This browser is blocking local storage on this page, so sign-in can\'t be remembered. ' +
+      'This usually happens when the file is opened directly (a file:// address) instead of ' +
+      'through a real web server. Serve this folder with a local server (e.g. <code>npx serve .</code> ' +
+      'or <code>python3 -m http.server</code>) and open it via http://localhost instead.</p>'
+    );
+    throw e;
+  }
+</script>
+<script>
   const STORAGE_KEY = "reviewFunnelBusinesses";
+
+  document.getElementById('signOutLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    sessionStorage.removeItem('rf_admin_logged_in');
+    window.location.href = 'index.html';
+  });
 
   // The review page is assumed to live in the same folder as this admin
   // page. Change REVIEW_PAGE_FILENAME if you rename or move feedback.html.
