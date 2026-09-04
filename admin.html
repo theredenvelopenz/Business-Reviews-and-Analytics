@@ -55,7 +55,7 @@
   <div class="panel" id="formPanel">
     <h2 id="formTitle">Add a business</h2>
     <label for="fName">Business name</label>
-    <input type="text" id="fName" placeholder="Casa Sabrosa">
+    <input type="text" id="fName" placeholder="Enter Business Name">
 
     <label for="fUrl">Google review URL</label>
     <input type="url" id="fUrl" placeholder="https://g.page/r/XXXXXXXXXXXX/review">
@@ -290,6 +290,12 @@
         <div class="link-row">
           <input type="text" id="link-${escapeHtml(id)}" readonly value="${escapeHtml(linkFor(id))}">
           <button class="btn-calm" data-copy="${escapeHtml(id)}">Copy</button>
+        </div>
+        <div style="text-align:center; margin-top:12px;">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(b.GOOGLE_REVIEW_URL)}"
+               alt="QR code for ${escapeHtml(b.BUSINESS_NAME)}'s Google review link"
+               style="width:140px; height:140px; border:1px solid var(--line); border-radius:8px;">
+          <div style="font-size:0.75rem; color:#9a8f7d; margin-top:4px;">Google review QR</div>
         </div>
         <div class="actions">
           <button class="btn-calm" data-edit="${escapeHtml(id)}">Edit</button>
