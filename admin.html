@@ -141,7 +141,7 @@
   const GITHUB_OWNER = "theredenvelopenz";
   const GITHUB_REPO = "Business-Reviews-and-Analytics";
   const GITHUB_BRANCH = "main";
-  const DATA_FILE_PATH = "businesses-data.js";
+  const DATA_FILE_PATH = "feedback.html";
 
   document.getElementById('repoLabel').textContent = GITHUB_OWNER + '/' + GITHUB_REPO;
 
@@ -241,13 +241,16 @@
     return await res.json();
   }
 
+  const DATA_BLOCK_RE = /(<script id="businessData">\s*window\.BUSINESSES\s*=\s*)(\{[\s\S]*?\})(\s*;\s*<\/script>)/;
+
   function parseBusinesses(fileContent){
-    const match = fileContent.match(/window\.BUSINESSES\s*=\s*(\{[\s\S]*\});?\s*$/);
-    if(!match) throw new Error('businesses-data.js is not in the expected format.');
-    return JSON.parse(match[1]);
+    const match = fileContent.match(DATA_BLOCK_RE);
+    if(!match) throw new Error('Could not find the businessData block in feedback.html. Make sure the <!-- BUSINESS-DATA-START --> markers and <script id="businessData"> tag are still intact.');
+    return JSON.parse(match[2]);
   }
-  function buildFileContent(obj){
-    return `window.BUSINESSES = ${JSON.stringify(obj, null, 2)};\n`;
+  function buildFileContent(fullFileContent, businessesObj){
+    const json = JSON.stringify(businessesObj, null, 2);
+    return fullFileContent.replace(DATA_BLOCK_RE, `$1${json}$3`);
   }
 
   // ---------- Connect flow ----------
@@ -267,7 +270,7 @@
     } catch(err){
       showConnectError('Could not connect: ' + err.message +
         '\n\nCheck the token has "Contents: Read and write" access to ' + GITHUB_OWNER + '/' + GITHUB_REPO +
-        ', and that businesses-data.js exists at the root of that repo.');
+        ', and that feedback.html exists at the root of that repo with the businessData block intact.');
     }
   });
 
@@ -355,7 +358,7 @@
 
       businesses[targetId] = { name, googleReviewUrl: url };
 
-      const newContent = buildFileContent(businesses);
+      const newContent = buildFileContent(content, businesses);
       const commitMsg = editingId ? `Update business: ${name}` : `Add business: ${name}`;
       await githubPutFile(newContent, sha, commitMsg);
 
@@ -397,7 +400,7 @@
       const { content, sha } = await githubGetFile();
       const businesses = parseBusinesses(content);
       delete businesses[id];
-      await githubPutFile(buildFileContent(businesses), sha, `Remove business: ${id}`);
+      await githubPutFile(buildFileContent(content, businesses), sha, `Remove business: ${id}`);
       if(editingId === id) resetForm();
       loadAndRender();
     } catch(err){

@@ -4,9 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>How was your visit?</title>
-<script src="businesses-data.js"></script>
 </head>
 <body>
+<!-- BUSINESS-DATA-START — admin.html edits only the object between these markers. Don't remove the markers. -->
+<script id="businessData">
+window.BUSINESSES = {};
+</script>
+<!-- BUSINESS-DATA-END -->
 <script>
   const params = new URLSearchParams(window.location.search);
   const bizId = params.get('b');
@@ -77,7 +81,7 @@
     }
     if(!business){
       card.innerHTML = '<p class="error">No business found for "' + escapeHtml(bizId) + '". ' +
-        'Check it was added on the admin page, and that businesses-data.js has synced.</p>';
+        'Check it was added on the admin page, and that this page has synced with GitHub.</p>';
       return;
     }
 
