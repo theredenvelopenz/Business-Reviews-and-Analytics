@@ -89,7 +89,11 @@
       .single();
 
     if(error || !business){
-      card.innerHTML = '<p class="error">This review page isn\'t set up yet.</p>';
+      console.error('Supabase error loading business:', error);
+      const detail = error ? (error.message + (error.code ? ' (code: ' + error.code + ')' : '')) : 'no matching business';
+      card.innerHTML = '<p class="error">This review page isn\'t set up yet.<br><br>' +
+        'Looking for ID: <code>' + escapeHtml(bizId) + '</code><br>' +
+        'Detail: ' + escapeHtml(detail) + '</p>';
       return;
     }
 
