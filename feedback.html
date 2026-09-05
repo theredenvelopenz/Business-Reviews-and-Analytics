@@ -4,20 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>How was your visit?</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <script>
-  const STORAGE_KEY = "reviewFunnelBusinesses";
+  /* ============================================================
+     CONFIG — must match the values in admin.html.
+     ============================================================ */
+  const SUPABASE_URL = "https://lhhkbycnstsrlqexugoj.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_tEm1Jerp_SGC0SxtckYAjw_QDf-3taq";
 
-  function loadBusinesses(){
-    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
-    catch(e){ return {}; }
-  }
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const BUSINESSES = loadBusinesses();
   const params = new URLSearchParams(window.location.search);
   const bizId = params.get('b');
-  const business = bizId ? BUSINESSES[bizId] : null;
 </script>
 
 <style>
@@ -60,23 +60,46 @@
     font-weight:600; padding:14px 18px; border-radius:10px; border:none; cursor:pointer; transition:opacity .15s ease;
   }
   button.action:active{ opacity:0.85; }
+  button.action:disabled{ opacity:0.5; cursor:default; }
   .btn-calm{ background:var(--calm-bg); color:var(--calm); }
   .btn-gold{ background:var(--gold); color:#fff; }
   .thanks{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:0.92rem; color:var(--calm); text-align:center; padding:8px 0 2px; }
-  .error{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:#9a8f7d; font-size:0.92rem; }
+  .loading, .error{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:#9a8f7d; font-size:0.92rem; }
   :focus-visible{ outline:2px solid var(--calm); outline-offset:2px; }
   @media (prefers-reduced-motion: reduce){ .panel{ animation:none; } .star{ transition:none; } }
 </style>
 
 <div class="card" id="card">
-  <p class="error">This review page isn't set up yet.</p>
+  <p class="loading">Loading…</p>
 </div>
 
 <script>
-  if(business){
-    document.getElementById('card').innerHTML = `
+  const card = document.getElementById('card');
+
+  async function init(){
+    if(!bizId){
+      card.innerHTML = '<p class="error">This link is missing a business ID.</p>';
+      return;
+    }
+
+    const { data: business, error } = await sb
+      .from('businesses')
+      .select('*')
+      .eq('id', bizId)
+      .single();
+
+    if(error || !business){
+      card.innerHTML = '<p class="error">This review page isn\'t set up yet.</p>';
+      return;
+    }
+
+    renderPage(business);
+  }
+
+  function renderPage(business){
+    card.innerHTML = `
       <h1>How was your visit?</h1>
-      <p class="sub">${escapeHtml(business.BUSINESS_NAME)}</p>
+      <p class="sub">${escapeHtml(business.name)}</p>
 
       <div class="stars" id="stars" role="radiogroup" aria-label="Star rating"></div>
       <div class="hint" id="hint">Tap a star to rate us.</div>
@@ -90,7 +113,7 @@
 
       <div class="panel" id="panelHigh">
         <h2>That's great to hear! 🎉</h2>
-        <p>Mind sharing it on Google? It takes 30 seconds and helps other customers find ${escapeHtml(business.BUSINESS_NAME)}.</p>
+        <p>Mind sharing it on Google? It takes 30 seconds and helps other customers find ${escapeHtml(business.name)}.</p>
         <button class="action btn-gold" id="goToGoogle">Leave a Google review</button>
       </div>
 
@@ -128,12 +151,8 @@
       });
     }
 
-    function logFeedback(rating, comment){
-      try{
-        const log = JSON.parse(localStorage.getItem('feedbackLog') || '[]');
-        log.push({ businessId: bizId, rating, comment: comment || null, timestamp: new Date().toISOString() });
-        localStorage.setItem('feedbackLog', JSON.stringify(log));
-      } catch(e){ /* storage unavailable — fail silently for the customer */ }
+    async function logFeedback(rating, comment){
+      await sb.from('feedback').insert({ business_id: business.id, rating, comment: comment || null });
     }
 
     function selectRating(n){
@@ -152,21 +171,26 @@
       }
     }
 
-    document.getElementById('submitLow').addEventListener('click', () => {
+    document.getElementById('submitLow').addEventListener('click', async (e) => {
+      const btn = e.target;
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
       const comment = document.getElementById('lowComment').value.trim();
-      logFeedback(selected, comment);
+      await logFeedback(selected, comment);
       panelLow.classList.remove('active');
       panelDone.classList.add('active');
     });
 
     document.getElementById('goToGoogle').addEventListener('click', () => {
-      window.location.href = business.GOOGLE_REVIEW_URL;
+      window.location.href = business.google_review_url;
     });
   }
 
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
+
+  init();
 </script>
 </body>
 </html>

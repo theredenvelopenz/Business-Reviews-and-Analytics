@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Review Funnel — Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --ink:#2b2620; --paper:#faf7f2; --panel:#ffffff; --line:#e8e1d6;
@@ -25,6 +26,7 @@
   }
   input:focus{ outline:2px solid var(--calm); outline-offset:1px; border-color:transparent; }
   button{ font-family:var(--sans); font-weight:600; font-size:0.9rem; border:none; border-radius:8px; padding:10px 16px; cursor:pointer; }
+  button:disabled{ opacity:0.5; cursor:default; }
   .btn-primary{ background:var(--gold); color:#fff; }
   .btn-calm{ background:var(--calm-bg); color:var(--calm); }
   .btn-danger{ background:var(--danger-bg); color:var(--danger); font-size:0.8rem; padding:6px 10px; }
@@ -36,12 +38,14 @@
   .link-row input{ flex:1; border:none; background:none; font-family:monospace; font-size:0.78rem; color:var(--calm); margin:0; padding:0; }
   .link-row button{ padding:6px 10px; font-size:0.78rem; }
   .actions{ display:flex; gap:8px; margin-top:10px; }
-  .empty{ color:#9a8f7d; font-size:0.9rem; text-align:center; padding:20px 0; }
+  .empty, .loading, .error{ color:#9a8f7d; font-size:0.9rem; text-align:center; padding:20px 0; }
+  .qr-block{ margin-top:10px; text-align:center; }
+  .qr-block img{ width:120px; height:120px; border:1px solid var(--line); border-radius:8px; }
+  .qr-block .qr-label{ font-size:0.72rem; color:#9a8f7d; margin-top:4px; }
   .toast{
     position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
     background:var(--ink); color:#fff; padding:10px 18px; border-radius:20px;
     font-size:0.85rem; opacity:0; pointer-events:none; transition:opacity .2s ease;
-    max-width:80vw; text-align:center;
   }
   .toast.show{ opacity:1; }
 </style>
@@ -88,7 +92,7 @@
 
   <div class="panel" id="listPanel">
     <h2>Businesses</h2>
-    <div id="bizList"></div>
+    <div id="bizList"><p class="loading">Loading…</p></div>
     <div class="empty" id="emptyState" style="display:none;">No businesses yet — add one above.</div>
   </div>
 </div>
@@ -105,25 +109,34 @@
     document.write(
       '<p style="font-family:sans-serif;max-width:480px;margin:60px auto;color:#a4453c;">' +
       'This browser is blocking local storage on this page, so sign-in can\'t be remembered. ' +
-      'Serve this folder over http(s) instead of opening the file directly.</p>'
+      'Serve this folder with a local server (e.g. <code>npx serve .</code>) and open it via ' +
+      'http://localhost instead of a file:// address.</p>'
     );
     throw e;
   }
 </script>
 <script>
-  const STORAGE_KEY = "reviewFunnelBusinesses";
+  /* ============================================================
+     CONFIG — paste your Supabase project details here.
+     Find these in Supabase: Project Settings > API.
+     Must match the values in feedback.html.
+     ============================================================ */
+  const SUPABASE_URL = "https://lhhkbycnstsrlqexugoj.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_tEm1Jerp_SGC0SxtckYAjw_QDf-3taq";
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // The review page is assumed to live in the same folder as this
+  // admin page. Change this if you rename or move feedback.html.
+  const REVIEW_PAGE_FILENAME = "feedback.html";
+  const baseFolder = window.location.href.replace(/admin\.html(\?.*)?$/, '');
+  const reviewBaseUrl = baseFolder + REVIEW_PAGE_FILENAME;
 
   document.getElementById('signOutLink').addEventListener('click', (e) => {
     e.preventDefault();
     sessionStorage.removeItem('rf_admin_logged_in');
     window.location.href = 'index.html';
   });
-
-  // The review page is assumed to live in the same folder as this admin
-  // page. Change REVIEW_PAGE_FILENAME if you rename or move feedback.html.
-  const REVIEW_PAGE_FILENAME = "feedback.html";
-  const baseFolder = window.location.href.replace(/admin\.html(\?.*)?$/, '');
-  const reviewBaseUrl = baseFolder + REVIEW_PAGE_FILENAME;
 
   const fName = document.getElementById('fName');
   const fUrl = document.getElementById('fUrl');
@@ -142,13 +155,6 @@
 
   let editingId = null;
 
-  function loadBusinesses(){
-    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
-    catch(e){ return {}; }
-  }
-  function saveBusinesses(obj){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-  }
   function showToast(msg){
     toast.textContent = msg;
     toast.classList.add('show');
@@ -185,7 +191,12 @@
     window.scrollTo({top:0, behavior:'smooth'});
   }
 
-  saveBtn.addEventListener('click', () => {
+  async function idExists(id){
+    const { data } = await sb.from('businesses').select('id').eq('id', id).maybeSingle();
+    return !!data;
+  }
+
+  saveBtn.addEventListener('click', async () => {
     const name = fName.value.trim();
     const url = fUrl.value.trim();
     if(!name || !url){
@@ -193,29 +204,31 @@
       return;
     }
 
-    const businesses = loadBusinesses();
+    saveBtn.disabled = true;
 
     if(editingId){
-      businesses[editingId].BUSINESS_NAME = name;
-      businesses[editingId].GOOGLE_REVIEW_URL = url;
-      saveBusinesses(businesses);
+      const { error } = await sb.from('businesses')
+        .update({ name, google_review_url: url })
+        .eq('id', editingId);
+      saveBtn.disabled = false;
+      if(error){ showToast('Could not save changes: ' + error.message); return; }
       showToast('Business updated.');
       resetForm();
-      render();
+      loadAndRender();
       return;
     }
 
     let id = slugify(name);
     let candidate = id, n = 2;
-    while(businesses[candidate]){ candidate = id + '-' + n; n++; }
-    businesses[candidate] = {
-      BUSINESS_NAME: name,
-      GOOGLE_REVIEW_URL: url,
-      GATE_LOW_RATINGS: true
-    };
-    saveBusinesses(businesses);
+    while(await idExists(candidate)){ candidate = id + '-' + n; n++; }
+
+    const { error } = await sb.from('businesses')
+      .insert({ id: candidate, name, google_review_url: url, gate_low_ratings: true });
+    saveBtn.disabled = false;
+    if(error){ showToast('Could not add business: ' + error.message); return; }
+
     showPreview(name, candidate);
-    render();
+    loadAndRender();
   });
 
   document.getElementById('previewCopyBtn').addEventListener('click', () => {
@@ -235,13 +248,12 @@
     resetForm();
   });
 
-  function editBusiness(id){
-    const businesses = loadBusinesses();
-    const b = businesses[id];
+  function editBusiness(id, businesses){
+    const b = businesses.find(x => x.id === id);
     if(!b) return;
     editingId = id;
-    fName.value = b.BUSINESS_NAME;
-    fUrl.value = b.GOOGLE_REVIEW_URL;
+    fName.value = b.name;
+    fUrl.value = b.google_review_url;
     formTitle.textContent = 'Edit business';
     saveBtn.textContent = 'Save changes';
     cancelEdit.style.display = 'inline-block';
@@ -250,17 +262,15 @@
     window.scrollTo({top:0, behavior:'smooth'});
   }
 
-  function deleteBusiness(id){
+  async function deleteBusiness(id){
     if(!confirm('Remove this business? This does not delete any NFC tags already written.')) return;
-    const businesses = loadBusinesses();
-    delete businesses[id];
-    saveBusinesses(businesses);
+    await sb.from('businesses').delete().eq('id', id);
     if(editingId === id) resetForm();
-    render();
+    loadAndRender();
   }
 
   function copyLink(id){
-    const input = document.getElementById('link-' + id);
+    const input = document.getElementById('link-' + CSS.escape(id));
     input.select();
     input.setSelectionRange(0, 99999);
     navigator.clipboard?.writeText(input.value).then(()=>{
@@ -271,48 +281,54 @@
     });
   }
 
-  function render(){
-    const businesses = loadBusinesses();
-    const ids = Object.keys(businesses);
+  async function loadAndRender(){
+    const { data: businesses, error } = await sb
+      .from('businesses')
+      .select('*')
+      .order('name');
+
+    if(error){
+      console.error('Supabase error loading businesses:', error);
+      bizList.innerHTML = '<p class="error">Could not load businesses: ' + escapeHtml(error.message || 'unknown error') + '</p>';
+      return;
+    }
+
+    emptyState.style.display = businesses.length ? 'none' : 'block';
     bizList.innerHTML = '';
-    emptyState.style.display = ids.length ? 'none' : 'block';
 
-    ids.sort((a,b)=>businesses[a].BUSINESS_NAME.localeCompare(businesses[b].BUSINESS_NAME));
-
-    ids.forEach(id => {
-      const b = businesses[id];
+    businesses.forEach(b => {
       const card = document.createElement('div');
       card.className = 'biz-card';
+      const link = linkFor(b.id);
+      const reviewQrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=' + encodeURIComponent(b.google_review_url);
       card.innerHTML = `
-        <div class="biz-name">${escapeHtml(b.BUSINESS_NAME)}</div>
-        <div class="biz-url">Google review: ${escapeHtml(b.GOOGLE_REVIEW_URL)}</div>
-        <div class="link-row">
-          <input type="text" id="link-${escapeHtml(id)}" readonly value="${escapeHtml(linkFor(id))}">
-          <button class="btn-calm" data-copy="${escapeHtml(id)}">Copy</button>
+        <div class="biz-name">${escapeHtml(b.name)}</div>
+        <div class="biz-url">Google review: ${escapeHtml(b.google_review_url)}</div>
+        <div class="qr-block">
+          <img src="${escapeHtml(reviewQrUrl)}" alt="QR code linking to Google review page">
+          <div class="qr-label">Google review QR</div>
         </div>
-        <div style="text-align:center; margin-top:12px;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(b.GOOGLE_REVIEW_URL)}"
-               alt="QR code for ${escapeHtml(b.BUSINESS_NAME)}'s Google review link"
-               style="width:140px; height:140px; border:1px solid var(--line); border-radius:8px;">
-          <div style="font-size:0.75rem; color:#9a8f7d; margin-top:4px;">Google review QR</div>
+        <div class="link-row">
+          <input type="text" id="link-${escapeHtml(b.id)}" readonly value="${escapeHtml(link)}">
+          <button class="btn-calm" data-copy="${escapeHtml(b.id)}">Copy</button>
         </div>
         <div class="actions">
-          <button class="btn-calm" data-edit="${escapeHtml(id)}">Edit</button>
-          <button class="btn-danger" data-delete="${escapeHtml(id)}">Remove</button>
+          <button class="btn-calm" data-edit="${escapeHtml(b.id)}">Edit</button>
+          <button class="btn-danger" data-delete="${escapeHtml(b.id)}">Remove</button>
         </div>
       `;
       bizList.appendChild(card);
     });
 
     bizList.querySelectorAll('[data-edit]').forEach(el =>
-      el.addEventListener('click', ()=>editBusiness(el.dataset.edit)));
+      el.addEventListener('click', ()=>editBusiness(el.dataset.edit, businesses)));
     bizList.querySelectorAll('[data-delete]').forEach(el =>
       el.addEventListener('click', ()=>deleteBusiness(el.dataset.delete)));
     bizList.querySelectorAll('[data-copy]').forEach(el =>
       el.addEventListener('click', ()=>copyLink(el.dataset.copy)));
   }
 
-  render();
+  loadAndRender();
 </script>
 </body>
 </html>
