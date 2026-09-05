@@ -19,13 +19,12 @@
   .panel{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:22px; margin-bottom:22px; }
   .panel h2{ font-size:1.05rem; margin:0 0 16px; }
   label{ display:block; font-size:0.82rem; font-weight:600; color:#4a453c; margin-bottom:5px; }
-  input[type=text], input[type=url], input[type=password]{
+  input[type=text], input[type=url]{
     width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px;
     font-family:var(--sans); font-size:0.92rem; background:#fcfbf9; margin-bottom:14px;
   }
   input:focus{ outline:2px solid var(--calm); outline-offset:1px; border-color:transparent; }
   button{ font-family:var(--sans); font-weight:600; font-size:0.9rem; border:none; border-radius:8px; padding:10px 16px; cursor:pointer; }
-  button:disabled{ opacity:0.5; cursor:default; }
   .btn-primary{ background:var(--gold); color:#fff; }
   .btn-calm{ background:var(--calm-bg); color:var(--calm); }
   .btn-danger{ background:var(--danger-bg); color:var(--danger); font-size:0.8rem; padding:6px 10px; }
@@ -37,11 +36,7 @@
   .link-row input{ flex:1; border:none; background:none; font-family:monospace; font-size:0.78rem; color:var(--calm); margin:0; padding:0; }
   .link-row button{ padding:6px 10px; font-size:0.78rem; }
   .actions{ display:flex; gap:8px; margin-top:10px; }
-  .empty, .loading{ color:#9a8f7d; font-size:0.9rem; text-align:center; padding:20px 0; }
-  .error{ color:#a4453c; font-size:0.85rem; background:var(--danger-bg); border-radius:8px; padding:12px 14px; line-height:1.5; }
-  .error code{ background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:4px; }
-  .help{ font-size:0.8rem; color:#9a8f7d; margin:-8px 0 14px; line-height:1.4; }
-  .help a{ color:var(--calm); }
+  .empty{ color:#9a8f7d; font-size:0.9rem; text-align:center; padding:20px 0; }
   .toast{
     position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
     background:var(--ink); color:#fff; padding:10px 18px; border-radius:20px;
@@ -58,62 +53,43 @@
     <a href="#" id="signOutLink" style="color:#6b6255;">Sign out</a>
   </p>
 
-  <div class="panel" id="connectPanel">
-    <h2>Connect to GitHub</h2>
-    <p class="help">
-      Paste a personal access token so this page can save businesses to
-      <code id="repoLabel"></code>. Create one at
-      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a>
-      — fine-grained, scoped only to this repo, with <strong>Contents: Read and write</strong> permission.
-      It's kept only in this browser tab's memory for this session — never saved to any file.
-    </p>
-    <label for="ghToken">GitHub personal access token</label>
-    <input type="password" id="ghToken" placeholder="github_pat_...">
+  <div class="panel" id="formPanel">
+    <h2 id="formTitle">Add a business</h2>
+    <label for="fName">Business name</label>
+    <input type="text" id="fName" placeholder="Enter Business Name">
+
+    <label for="fUrl">Google review URL</label>
+    <input type="url" id="fUrl" placeholder="https://g.page/r/XXXXXXXXXXXX/review">
+
     <div class="actions">
-      <button class="btn-primary" id="connectBtn">Connect</button>
+      <button class="btn-primary" id="saveBtn">Save business</button>
+      <button class="btn-ghost" id="cancelEdit" style="display:none;">Cancel edit</button>
     </div>
-    <p class="error" id="connectError" style="display:none; margin-top:12px;"></p>
   </div>
 
-  <div id="mainUi" style="display:none;">
-    <div class="panel" id="formPanel">
-      <h2 id="formTitle">Add a business</h2>
-      <label for="fName">Business name</label>
-      <input type="text" id="fName" placeholder="Enter Business Name">
-
-      <label for="fUrl">Google review URL</label>
-      <input type="url" id="fUrl" placeholder="https://g.page/r/XXXXXXXXXXXX/review">
-
-      <div class="actions">
-        <button class="btn-primary" id="saveBtn">Save business</button>
-        <button class="btn-ghost" id="cancelEdit" style="display:none;">Cancel edit</button>
-      </div>
+  <div class="panel" id="previewPanel" style="display:none;">
+    <h2>✅ Ready to test</h2>
+    <p class="lede" id="previewName" style="margin-bottom:14px;"></p>
+    <div style="text-align:center; margin-bottom:14px;">
+      <img id="previewQr" alt="QR code for the review link" style="width:200px; height:200px; border:1px solid var(--line); border-radius:8px;">
     </div>
-
-    <div class="panel" id="previewPanel" style="display:none;">
-      <h2>✅ Saved to GitHub</h2>
-      <p class="lede" id="previewName" style="margin-bottom:14px;"></p>
-      <div style="text-align:center; margin-bottom:14px;">
-        <img id="previewQr" alt="QR code for the review link" style="width:200px; height:200px; border:1px solid var(--line); border-radius:8px;">
-      </div>
-      <p class="lede" style="margin-bottom:8px;">Scan the code above with your phone's camera — it should open the star-rating page. If it looks right, write the same link to your NFC tag.</p>
-      <div class="link-row">
-        <input type="text" id="previewLink" readonly>
-        <button class="btn-calm" id="previewCopyBtn">Copy</button>
-      </div>
-      <div class="actions">
-        <a id="previewOpenLink" href="#" target="_blank" rel="noopener" style="text-decoration:none;">
-          <button class="btn-calm" type="button">Open in this browser</button>
-        </a>
-        <button class="btn-primary" id="previewDoneBtn">Add another business</button>
-      </div>
+    <p class="lede" style="margin-bottom:8px;">Scan the code above with your phone's camera — it should open the star-rating page. If it looks right, write the same link to your NFC tag.</p>
+    <div class="link-row">
+      <input type="text" id="previewLink" readonly>
+      <button class="btn-calm" id="previewCopyBtn">Copy</button>
     </div>
-
-    <div class="panel" id="listPanel">
-      <h2>Businesses</h2>
-      <div id="bizList"><p class="loading">Loading…</p></div>
-      <div class="empty" id="emptyState" style="display:none;">No businesses yet — add one above.</div>
+    <div class="actions">
+      <a id="previewOpenLink" href="#" target="_blank" rel="noopener" style="text-decoration:none;">
+        <button class="btn-calm" type="button">Open in this browser</button>
+      </a>
+      <button class="btn-primary" id="previewDoneBtn">Add another business</button>
     </div>
+  </div>
+
+  <div class="panel" id="listPanel">
+    <h2>Businesses</h2>
+    <div id="bizList"></div>
+    <div class="empty" id="emptyState" style="display:none;">No businesses yet — add one above.</div>
   </div>
 </div>
 
@@ -135,15 +111,7 @@
   }
 </script>
 <script>
-  /* ============================================================
-     CONFIG — your GitHub repo details.
-     ============================================================ */
-  const GITHUB_OWNER = "theredenvelopenz";
-  const GITHUB_REPO = "Business-Reviews-and-Analytics";
-  const GITHUB_BRANCH = "main";
-  const DATA_FILE_PATH = "feedback.html";
-
-  document.getElementById('repoLabel').textContent = GITHUB_OWNER + '/' + GITHUB_REPO;
+  const STORAGE_KEY = "reviewFunnelBusinesses";
 
   document.getElementById('signOutLink').addEventListener('click', (e) => {
     e.preventDefault();
@@ -151,16 +119,11 @@
     window.location.href = 'index.html';
   });
 
+  // The review page is assumed to live in the same folder as this admin
+  // page. Change REVIEW_PAGE_FILENAME if you rename or move feedback.html.
   const REVIEW_PAGE_FILENAME = "feedback.html";
   const baseFolder = window.location.href.replace(/admin\.html(\?.*)?$/, '');
   const reviewBaseUrl = baseFolder + REVIEW_PAGE_FILENAME;
-
-  let ghToken = sessionStorage.getItem('rf_gh_token') || '';
-  let currentSha = null;
-
-  const connectPanel = document.getElementById('connectPanel');
-  const mainUi = document.getElementById('mainUi');
-  const connectError = document.getElementById('connectError');
 
   const fName = document.getElementById('fName');
   const fUrl = document.getElementById('fUrl');
@@ -179,10 +142,17 @@
 
   let editingId = null;
 
+  function loadBusinesses(){
+    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch(e){ return {}; }
+  }
+  function saveBusinesses(obj){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+  }
   function showToast(msg){
     toast.textContent = msg;
     toast.classList.add('show');
-    setTimeout(()=>toast.classList.remove('show'), 2600);
+    setTimeout(()=>toast.classList.remove('show'), 1800);
   }
   function slugify(str){
     return str.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -194,108 +164,7 @@
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
-  function b64EncodeUnicode(str){
-    return btoa(unescape(encodeURIComponent(str)));
-  }
-  function b64DecodeUnicode(str){
-    return decodeURIComponent(escape(atob(str)));
-  }
 
-  // ---------- GitHub API ----------
-  async function githubGetFile(){
-    const res = await fetch(
-      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}?ref=${GITHUB_BRANCH}`,
-      { headers: { 'Authorization': `Bearer ${ghToken}`, 'Accept': 'application/vnd.github+json' } }
-    );
-    if(!res.ok){
-      const body = await res.text();
-      throw new Error(`GitHub GET ${res.status}: ${body}`);
-    }
-    const json = await res.json();
-    const content = b64DecodeUnicode(json.content.replace(/\n/g, ''));
-    return { content, sha: json.sha };
-  }
-
-  async function githubPutFile(newContent, sha, message){
-    const res = await fetch(
-      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${DATA_FILE_PATH}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${ghToken}`,
-          'Accept': 'application/vnd.github+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message,
-          content: b64EncodeUnicode(newContent),
-          sha,
-          branch: GITHUB_BRANCH
-        })
-      }
-    );
-    if(!res.ok){
-      const body = await res.text();
-      throw new Error(`GitHub PUT ${res.status}: ${body}`);
-    }
-    return await res.json();
-  }
-
-  const DATA_BLOCK_RE = /(<script id="businessData">\s*window\.BUSINESSES\s*=\s*)(\{[\s\S]*?\})(\s*;\s*<\/script>)/;
-
-  function parseBusinesses(fileContent){
-    const match = fileContent.match(DATA_BLOCK_RE);
-    if(!match) throw new Error('Could not find the businessData block in feedback.html. Make sure the <!-- BUSINESS-DATA-START --> markers and <script id="businessData"> tag are still intact.');
-    return JSON.parse(match[2]);
-  }
-  function buildFileContent(fullFileContent, businessesObj){
-    const json = JSON.stringify(businessesObj, null, 2);
-    return fullFileContent.replace(DATA_BLOCK_RE, `$1${json}$3`);
-  }
-
-  // ---------- Connect flow ----------
-  document.getElementById('connectBtn').addEventListener('click', async () => {
-    const token = document.getElementById('ghToken').value.trim();
-    if(!token){ showConnectError('Paste a token first.'); return; }
-    ghToken = token;
-    connectError.style.display = 'none';
-
-    try{
-      const { sha } = await githubGetFile();
-      currentSha = sha;
-      sessionStorage.setItem('rf_gh_token', ghToken);
-      connectPanel.style.display = 'none';
-      mainUi.style.display = 'block';
-      loadAndRender();
-    } catch(err){
-      showConnectError('Could not connect: ' + err.message +
-        '\n\nCheck the token has "Contents: Read and write" access to ' + GITHUB_OWNER + '/' + GITHUB_REPO +
-        ', and that feedback.html exists at the root of that repo with the businessData block intact.');
-    }
-  });
-
-  function showConnectError(msg){
-    connectError.textContent = msg;
-    connectError.style.display = 'block';
-  }
-
-  // Auto-connect if we already have a token from earlier this session
-  async function tryAutoConnect(){
-    if(!ghToken) return;
-    try{
-      const { sha } = await githubGetFile();
-      currentSha = sha;
-      connectPanel.style.display = 'none';
-      mainUi.style.display = 'block';
-      loadAndRender();
-    } catch(err){
-      // token from earlier session no longer works — fall back to asking again
-      sessionStorage.removeItem('rf_gh_token');
-      ghToken = '';
-    }
-  }
-
-  // ---------- Form ----------
   function resetForm(){
     editingId = null;
     fName.value = ''; fUrl.value = '';
@@ -316,6 +185,39 @@
     window.scrollTo({top:0, behavior:'smooth'});
   }
 
+  saveBtn.addEventListener('click', () => {
+    const name = fName.value.trim();
+    const url = fUrl.value.trim();
+    if(!name || !url){
+      showToast('Fill in the business name and Google review URL.');
+      return;
+    }
+
+    const businesses = loadBusinesses();
+
+    if(editingId){
+      businesses[editingId].BUSINESS_NAME = name;
+      businesses[editingId].GOOGLE_REVIEW_URL = url;
+      saveBusinesses(businesses);
+      showToast('Business updated.');
+      resetForm();
+      render();
+      return;
+    }
+
+    let id = slugify(name);
+    let candidate = id, n = 2;
+    while(businesses[candidate]){ candidate = id + '-' + n; n++; }
+    businesses[candidate] = {
+      BUSINESS_NAME: name,
+      GOOGLE_REVIEW_URL: url,
+      GATE_LOW_RATINGS: true
+    };
+    saveBusinesses(businesses);
+    showPreview(name, candidate);
+    render();
+  });
+
   document.getElementById('previewCopyBtn').addEventListener('click', () => {
     previewLink.select();
     previewLink.setSelectionRange(0, 99999);
@@ -333,59 +235,13 @@
     resetForm();
   });
 
-  saveBtn.addEventListener('click', async () => {
-    const name = fName.value.trim();
-    const url = fUrl.value.trim();
-    if(!name || !url){
-      showToast('Fill in the business name and Google review URL.');
-      return;
-    }
-
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'Saving…';
-
-    try{
-      const { content, sha } = await githubGetFile(); // always fetch latest before writing
-      const businesses = parseBusinesses(content);
-
-      let targetId = editingId;
-      if(!editingId){
-        let id = slugify(name);
-        let candidate = id, n = 2;
-        while(businesses[candidate]){ candidate = id + '-' + n; n++; }
-        targetId = candidate;
-      }
-
-      businesses[targetId] = { name, googleReviewUrl: url };
-
-      const newContent = buildFileContent(content, businesses);
-      const commitMsg = editingId ? `Update business: ${name}` : `Add business: ${name}`;
-      await githubPutFile(newContent, sha, commitMsg);
-
-      saveBtn.disabled = false;
-      saveBtn.textContent = editingId ? 'Save changes' : 'Save business';
-
-      if(editingId){
-        showToast('Business updated.');
-        resetForm();
-        loadAndRender();
-      } else {
-        showPreview(name, targetId);
-        loadAndRender();
-      }
-    } catch(err){
-      saveBtn.disabled = false;
-      saveBtn.textContent = editingId ? 'Save changes' : 'Save business';
-      showToast('Could not save: ' + err.message);
-    }
-  });
-
-  function editBusiness(id, businesses){
+  function editBusiness(id){
+    const businesses = loadBusinesses();
     const b = businesses[id];
     if(!b) return;
     editingId = id;
-    fName.value = b.name;
-    fUrl.value = b.googleReviewUrl;
+    fName.value = b.BUSINESS_NAME;
+    fUrl.value = b.GOOGLE_REVIEW_URL;
     formTitle.textContent = 'Edit business';
     saveBtn.textContent = 'Save changes';
     cancelEdit.style.display = 'inline-block';
@@ -394,22 +250,17 @@
     window.scrollTo({top:0, behavior:'smooth'});
   }
 
-  async function deleteBusiness(id){
+  function deleteBusiness(id){
     if(!confirm('Remove this business? This does not delete any NFC tags already written.')) return;
-    try{
-      const { content, sha } = await githubGetFile();
-      const businesses = parseBusinesses(content);
-      delete businesses[id];
-      await githubPutFile(buildFileContent(content, businesses), sha, `Remove business: ${id}`);
-      if(editingId === id) resetForm();
-      loadAndRender();
-    } catch(err){
-      showToast('Could not remove: ' + err.message);
-    }
+    const businesses = loadBusinesses();
+    delete businesses[id];
+    saveBusinesses(businesses);
+    if(editingId === id) resetForm();
+    render();
   }
 
   function copyLink(id){
-    const input = document.getElementById('link-' + CSS.escape(id));
+    const input = document.getElementById('link-' + id);
     input.select();
     input.setSelectionRange(0, 99999);
     navigator.clipboard?.writeText(input.value).then(()=>{
@@ -420,38 +271,28 @@
     });
   }
 
-  async function loadAndRender(){
-    bizList.innerHTML = '<p class="loading">Loading…</p>';
-    let businesses;
-    try{
-      const { content, sha } = await githubGetFile();
-      currentSha = sha;
-      businesses = parseBusinesses(content);
-    } catch(err){
-      bizList.innerHTML = '<p class="error">Could not load businesses from GitHub: ' + escapeHtml(err.message) + '</p>';
-      return;
-    }
-
+  function render(){
+    const businesses = loadBusinesses();
     const ids = Object.keys(businesses);
-    emptyState.style.display = ids.length ? 'none' : 'block';
     bizList.innerHTML = '';
+    emptyState.style.display = ids.length ? 'none' : 'block';
 
-    ids.sort((a,b)=>businesses[a].name.localeCompare(businesses[b].name));
+    ids.sort((a,b)=>businesses[a].BUSINESS_NAME.localeCompare(businesses[b].BUSINESS_NAME));
 
     ids.forEach(id => {
       const b = businesses[id];
       const card = document.createElement('div');
       card.className = 'biz-card';
       card.innerHTML = `
-        <div class="biz-name">${escapeHtml(b.name)}</div>
-        <div class="biz-url">Google review: ${escapeHtml(b.googleReviewUrl)}</div>
+        <div class="biz-name">${escapeHtml(b.BUSINESS_NAME)}</div>
+        <div class="biz-url">Google review: ${escapeHtml(b.GOOGLE_REVIEW_URL)}</div>
         <div class="link-row">
           <input type="text" id="link-${escapeHtml(id)}" readonly value="${escapeHtml(linkFor(id))}">
           <button class="btn-calm" data-copy="${escapeHtml(id)}">Copy</button>
         </div>
         <div style="text-align:center; margin-top:12px;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(b.googleReviewUrl)}"
-               alt="QR code for ${escapeHtml(b.name)}'s Google review link"
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(b.GOOGLE_REVIEW_URL)}"
+               alt="QR code for ${escapeHtml(b.BUSINESS_NAME)}'s Google review link"
                style="width:140px; height:140px; border:1px solid var(--line); border-radius:8px;">
           <div style="font-size:0.75rem; color:#9a8f7d; margin-top:4px;">Google review QR</div>
         </div>
@@ -464,14 +305,14 @@
     });
 
     bizList.querySelectorAll('[data-edit]').forEach(el =>
-      el.addEventListener('click', ()=>editBusiness(el.dataset.edit, businesses)));
+      el.addEventListener('click', ()=>editBusiness(el.dataset.edit)));
     bizList.querySelectorAll('[data-delete]').forEach(el =>
       el.addEventListener('click', ()=>deleteBusiness(el.dataset.delete)));
     bizList.querySelectorAll('[data-copy]').forEach(el =>
       el.addEventListener('click', ()=>copyLink(el.dataset.copy)));
   }
 
-  tryAutoConnect();
+  render();
 </script>
 </body>
 </html>
