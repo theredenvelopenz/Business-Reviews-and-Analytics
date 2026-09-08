@@ -95,6 +95,10 @@
     <div id="bizList"><p class="loading">Loading…</p></div>
     <div class="empty" id="emptyState" style="display:none;">No businesses yet — add one above.</div>
   </div>
+
+  <p style="text-align:center; font-size:0.78rem; color:#9a8f7d;">
+    <a href="privacy.html" style="color:inherit;">Privacy Policy</a>
+  </p>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -201,6 +205,10 @@
     const url = fUrl.value.trim();
     if(!name || !url){
       showToast('Fill in the business name and Google review URL.');
+      return;
+    }
+    const looksLikeGoogle = /google\.com|g\.page|goo\.gl/i.test(url);
+    if(!looksLikeGoogle && !confirm('That URL doesn\'t look like a Google review link. Save it anyway?')){
       return;
     }
 

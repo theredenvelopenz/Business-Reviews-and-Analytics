@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy</title>
+<style>
+  :root{
+    --ink:#1a1a1a; --paper:#f7f8fa; --panel:#ffffff; --line:#e3e5e9;
+    --blue:#2f5fe0; --muted:#6b7280;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); padding:40px 20px 80px; }
+  .wrap{ max-width:680px; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:36px 32px; }
+  h1{ font-size:1.5rem; margin:0 0 4px; }
+  .updated{ color:var(--muted); font-size:0.85rem; margin:0 0 28px; }
+  h2{ font-size:1.05rem; margin:28px 0 8px; }
+  p, li{ font-size:0.92rem; line-height:1.6; color:#2b2b2b; }
+  ul{ padding-left:20px; margin:8px 0; }
+  .fill{ background:#fff3cd; padding:1px 4px; border-radius:3px; }
+  .toc a{ color:var(--blue); text-decoration:none; font-size:0.88rem; }
+  .toc li{ margin-bottom:4px; }
+  code{ background:#f1f2f4; padding:1px 5px; border-radius:4px; font-size:0.85em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Privacy Policy</h1>
+  <p class="updated">Applies to the review and feedback system operated by The Red Envelope NZ ("we", "us"), covering every business using this system. Last updated 09/09/2026.</p>
+
+  <p>This policy explains what personal information this review page collects, why, and what rights you have — in line with the New Zealand <strong>Privacy Act 2020</strong> and its 13 Information Privacy Principles (IPPs).</p>
+
+  <h2>What we collect (IPP 1, 2, 4)</h2>
+  <p>When you use a review page on this system, we may collect:</p>
+  <ul>
+    <li>Your star rating (always collected)</li>
+    <li>Your written feedback comment (optional)</li>
+    <li>Your name (optional)</li>
+    <li>Your email address (optional)</li>
+  </ul>
+  <p>We only collect what you choose to enter. Rating your experience does not require giving your name or email — you're welcome to leave feedback entirely anonymously.</p>
+
+  <h2>Why we collect it (IPP 1, 3)</h2>
+  <p>We collect this information to:</p>
+  <ul>
+    <li>Understand and improve the customer experience at the business you're rating</li>
+    <li>Follow up with you directly about your feedback, if you provide contact details and it's warranted</li>
+    <li>Keep internal, aggregated records of customer satisfaction over time</li>
+  </ul>
+  <p>We do not use it for marketing unless you separately opt in elsewhere, and we do not sell it.</p>
+
+  <h2>Who sees it (IPP 10, 11)</h2>
+  <p>Feedback submitted through this system is <strong>not publicly displayed</strong> and is not automatically shared with any third party. It is visible only to the business you rated and, where relevant, the operator of this system for the purpose of running it. Choosing to leave a public Google review is a separate, voluntary action you take yourself on Google's platform — Google's own privacy policy governs that.</p>
+
+  <h2>Where it's stored (IPP 5, 12)</h2>
+  <p>Feedback is stored in a hosted database (Supabase, built on PostgreSQL), encrypted both in transit and at rest. <span class="fill">[Confirm your Supabase project's hosting region here — check Project Settings > General — so we can state whether IPP 12 cross-border rules apply]</span></p>
+  <p>Access to stored feedback is restricted — the public review page can submit feedback but cannot read other people's submissions.</p>
+
+  <h2>How long we keep it (IPP 9)</h2>
+  <p>We keep feedback for <span class="fill">[e.g. "24 months from submission"]</span>, after which it is deleted unless we're required to keep it longer for a legal reason.</p>
+
+  <h2>Your rights (IPP 6, 7)</h2>
+  <p>You can ask us what personal information we hold about you, and ask us to correct it if it's wrong, by contacting theredenvelopenz@google.com. We'll respond within the timeframes required by the Privacy Act 2020.</p>
+
+  <h2>Security (IPP 5)</h2>
+  <ul>
+    <li>All pages are served over HTTPS</li>
+    <li>The database enforces access rules (row-level security) so feedback cannot be read by the public, only by authorised access</li>
+    <li>We only collect the minimum information needed for the stated purpose</li>
+  </ul>
+
+  <h2>Concerns or complaints</h2>
+  <p>If you have a concern about how your information has been handled, contact us first at theredenvelopenz@google.com. If unresolved, you can contact the New Zealand <strong>Office of the Privacy Commissioner</strong> at <a href="https://www.privacy.org.nz" target="_blank" rel="noopener">privacy.org.nz</a>.</p>
+
+  <h2>Health information</h2>
+  <p>If this review page is being used by a healthcare provider, feedback that touches on your care or treatment may be treated as health information under the <strong>Health Information Privacy Code 2020</strong>, which applies additional protections beyond the general rules above.</p>
+</div>
+</body>
+</html>

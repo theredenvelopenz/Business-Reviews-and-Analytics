@@ -55,8 +55,9 @@
 
 <script>
   // Basic front-end gate only — not real security. Anyone who views this
-  // page's source can see these credentials. Fine for keeping the admin
-  // page out of casual sight, not a substitute for a real login system.
+  // page's source can see these credentials, and the database itself
+  // has no login requirement behind this — see admin.html's Supabase
+  // policy, which allows writes from anyone holding the public API key.
   const USERNAME = "admin";
   const PASSWORD = "admin";
 
@@ -66,19 +67,7 @@
     const pass = document.getElementById('pass').value;
 
     if(user === USERNAME && pass === PASSWORD){
-      try{
-        sessionStorage.setItem('rf_admin_logged_in', '1');
-        if(sessionStorage.getItem('rf_admin_logged_in') !== '1'){
-          throw new Error('storage did not persist');
-        }
-      } catch(err){
-        document.getElementById('error').innerHTML =
-          'This browser is blocking local storage on this page — sign-in can\'t be remembered. ' +
-          'This usually happens when the file is opened directly (a file:// address) instead of ' +
-          'through a real web server. Try serving this folder (e.g. <code>npx serve .</code>) and ' +
-          'opening it via http://localhost instead.';
-        return;
-      }
+      sessionStorage.setItem('rf_admin_logged_in', '1');
       window.location.href = 'admin.html';
     } else {
       document.getElementById('error').textContent = 'Incorrect username or password.';

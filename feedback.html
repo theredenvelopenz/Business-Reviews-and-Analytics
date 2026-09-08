@@ -22,51 +22,67 @@
 
 <style>
   :root{
-    --ink:#2b2620; --paper:#faf7f2; --panel:#ffffff; --line:#e8e1d6;
-    --gold:#c8912b; --gold-dim:#e4d3ad; --calm:#5c6b5a; --calm-bg:#eef1ec; --radius:14px;
+    --ink:#1a1a1a; --paper:#f7f8fa; --panel:#ffffff; --line:#e3e5e9;
+    --gold:#f5a623; --gold-dim:#dcdfe4; --blue:#2f5fe0; --blue-dark:#274fc0;
+    --muted:#6b7280; --radius:12px;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--paper); color:var(--ink);
-    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+    background:var(--paper); color:var(--ink); font-family:var(--sans);
     min-height:100vh; display:flex; align-items:center; justify-content:center;
     padding:32px 20px; -webkit-tap-highlight-color:transparent;
   }
-  .card{ width:100%; max-width:420px; text-align:center; }
-  h1{ font-size:1.7rem; font-weight:500; line-height:1.3; margin:0 0 6px; letter-spacing:0.2px; }
-  .sub{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:0.95rem; color:#6b6255; margin:0 0 32px; }
-  .stars{ display:flex; justify-content:center; gap:6px; margin:0 0 8px; }
+  .card{
+    width:100%; max-width:440px; background:var(--panel);
+    border:1px solid var(--line); border-radius:16px;
+    padding:32px 28px; text-align:center;
+  }
+  .stars{ display:flex; justify-content:center; gap:8px; margin:0 0 22px; }
   .star{
-    font-size:2.6rem; line-height:1; color:var(--gold-dim); background:none; border:none;
-    padding:4px; cursor:pointer; transition:transform .15s ease, color .15s ease;
+    font-size:2rem; line-height:1; color:var(--gold-dim); background:none; border:none;
+    padding:2px; cursor:pointer; transition:transform .12s ease, color .12s ease;
   }
-  .star:active{ transform:scale(0.88); }
+  .star:active{ transform:scale(0.9); }
   .star.filled{ color:var(--gold); }
-  .hint{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:0.82rem; color:#9a8f7d; min-height:1.2em; margin-bottom:28px; }
-  .panel{ display:none; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:26px 22px; text-align:left; animation:rise .35s ease both; }
+
+  h1{ font-size:1.35rem; font-weight:700; margin:0 0 6px; }
+  .sub{ font-size:0.92rem; color:var(--muted); margin:0 0 24px; line-height:1.4; }
+
+  .panel{ display:none; text-align:left; }
   .panel.active{ display:block; }
-  @keyframes rise{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
-  .panel h2{ font-size:1.15rem; font-weight:500; margin:0 0 8px; }
-  .panel p{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:0.92rem; line-height:1.5; color:#4a453c; margin:0 0 18px; }
-  textarea{
-    width:100%; min-height:96px; resize:vertical; border:1px solid var(--line); border-radius:10px;
-    padding:12px 14px; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:0.95rem;
-    color:var(--ink); background:#fcfbf9; margin-bottom:14px;
+
+  label{ display:block; font-size:0.85rem; font-weight:700; margin:0 0 6px; }
+  input, textarea{
+    width:100%; border:1px solid var(--line); border-radius:8px;
+    padding:11px 13px; font-family:var(--sans); font-size:0.92rem;
+    color:var(--ink); background:#fff; margin-bottom:16px;
   }
-  textarea:focus{ outline:2px solid var(--calm); outline-offset:1px; border-color:transparent; }
+  input::placeholder, textarea::placeholder{ color:#a7abb3; }
+  textarea{ min-height:88px; resize:vertical; }
+  input:focus, textarea:focus{ outline:2px solid var(--blue); outline-offset:1px; border-color:transparent; }
+
+  .privacy-note{ font-size:0.76rem; color:var(--muted); margin:-8px 0 16px; }
+
   button.action{
-    width:100%; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:0.98rem;
-    font-weight:600; padding:14px 18px; border-radius:10px; border:none; cursor:pointer; transition:opacity .15s ease;
+    width:100%; font-family:var(--sans); font-size:0.98rem; font-weight:700;
+    padding:14px 18px; border-radius:8px; cursor:pointer; transition:opacity .15s ease;
   }
-  button.action:active{ opacity:0.85; }
-  button.action:disabled{ opacity:0.5; cursor:default; }
-  .btn-calm{ background:var(--calm-bg); color:var(--calm); }
-  .btn-gold{ background:var(--gold); color:#fff; }
-  .thanks{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:0.92rem; color:var(--calm); text-align:center; padding:8px 0 2px; }
-  .loading, .error{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:#9a8f7d; font-size:0.92rem; }
-  :focus-visible{ outline:2px solid var(--calm); outline-offset:2px; }
-  @media (prefers-reduced-motion: reduce){ .panel{ animation:none; } .star{ transition:none; } }
+  button.action:active{ opacity:0.88; }
+  button.action:disabled{ opacity:0.55; cursor:default; }
+  .btn-blue{ background:var(--blue); color:#fff; border:none; }
+  .btn-blue:hover{ background:var(--blue-dark); }
+  .btn-outline{ background:#fff; color:var(--ink); border:1px solid var(--line); }
+
+  .divider{ display:flex; align-items:center; gap:12px; margin:18px 0; color:var(--muted); font-size:0.78rem; font-weight:600; letter-spacing:0.04em; }
+  .divider::before, .divider::after{ content:""; flex:1; height:1px; background:var(--line); }
+
+  .thanks{ font-size:0.94rem; color:#2f7a4f; text-align:center; margin:0 0 16px; }
+  .error, .loading{ font-family:var(--sans); color:var(--muted); font-size:0.92rem; }
+
+  :focus-visible{ outline:2px solid var(--blue); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){ .star{ transition:none; } }
 </style>
 
 <div class="card" id="card">
@@ -102,38 +118,52 @@
 
   function renderPage(business){
     card.innerHTML = `
-      <h1>How was your visit?</h1>
-      <p class="sub">${escapeHtml(business.name)}</p>
-
       <div class="stars" id="stars" role="radiogroup" aria-label="Star rating"></div>
-      <div class="hint" id="hint">Tap a star to rate us.</div>
 
-      <div class="panel" id="panelLow">
-        <h2>Thanks for telling us.</h2>
-        <p>We'd love the chance to make this right.</p>
-        <textarea id="lowComment" placeholder="What happened, and what can we do better?"></textarea>
-        <button class="action btn-calm" id="submitLow">Send feedback</button>
+      <div id="promptPanel">
+        <h1>How was your visit?</h1>
+        <p class="sub">${escapeHtml(business.name)} — tap a star to rate us.</p>
       </div>
 
-      <div class="panel" id="panelHigh">
-        <h2>That's great to hear! 🎉</h2>
-        <p>Mind sharing it on Google? It takes 30 seconds and helps other customers find ${escapeHtml(business.name)}.</p>
-        <button class="action btn-gold" id="goToGoogle">Leave a Google review</button>
+      <div class="panel" id="panelForm">
+        <h1 id="heading">We want to make this right</h1>
+        <p class="sub" id="subheading">Please let us know how we can improve your experience.</p>
+
+        <label for="fName">Your Name</label>
+        <input type="text" id="fName" placeholder="John Doe">
+
+        <label for="fEmail">Contact Email</label>
+        <input type="email" id="fEmail" placeholder="john@example.com">
+
+        <label for="fMessage">Message</label>
+        <textarea id="fMessage" placeholder="What went wrong and how can we fix it?"></textarea>
+
+        <p class="privacy-note">Name and email are optional — used only to follow up on your feedback, kept private, and never shared publicly. See our <a href="privacy.html" target="_blank" style="color:inherit;">Privacy Policy</a>.</p>
+
+        <p class="error" id="submitError" style="display:none; margin:0 0 12px;"></p>
+
+        <button class="action btn-blue" type="button" id="submitFeedback">Send Private Feedback</button>
+
+        <div class="divider">OR</div>
+
+        <button class="action btn-outline" type="button" id="goToGoogle">Leave a Public Google Review</button>
       </div>
 
       <div class="panel" id="panelDone">
         <p class="thanks">Thank you — your feedback has been sent to the team.</p>
+        <div class="divider">OR</div>
+        <button class="action btn-outline" type="button" id="goToGoogleAfter">Leave a Public Google Review</button>
       </div>
     `;
 
     const starsEl = document.getElementById('stars');
-    const hint = document.getElementById('hint');
-    const panelLow = document.getElementById('panelLow');
-    const panelHigh = document.getElementById('panelHigh');
+    const promptPanel = document.getElementById('promptPanel');
+    const panelForm = document.getElementById('panelForm');
     const panelDone = document.getElementById('panelDone');
+    const heading = document.getElementById('heading');
+    const subheading = document.getElementById('subheading');
 
     let selected = 0;
-    const labels = ["Tap a star to rate us.","Poor","Not great","Okay","Good","Excellent"];
 
     for(let i=1;i<=5;i++){
       const btn = document.createElement('button');
@@ -155,37 +185,64 @@
       });
     }
 
-    async function logFeedback(rating, comment){
-      await sb.from('feedback').insert({ business_id: business.id, rating, comment: comment || null });
+    function goToGoogle(){
+      // Log the rating for internal analytics even if no private
+      // feedback was submitted, then send them to the real review.
+      sb.from('feedback').insert({ business_id: business.id, rating: selected || null }).then(()=>{});
+      window.location.href = business.google_review_url;
     }
 
     function selectRating(n){
       selected = n;
       paintStars(n);
-      hint.textContent = labels[n];
-      panelLow.classList.remove('active');
-      panelHigh.classList.remove('active');
+      promptPanel.style.display = 'none';
       panelDone.classList.remove('active');
 
       if(n <= 3){
-        panelLow.classList.add('active');
+        heading.textContent = "We want to make this right";
+        subheading.textContent = "Please let us know how we can improve your experience.";
       } else {
-        logFeedback(n, null);
-        panelHigh.classList.add('active');
+        heading.textContent = "So glad you had a great visit!";
+        subheading.textContent = "Feel free to add a note, or head straight to Google below.";
       }
+      panelForm.classList.add('active');
     }
 
-    document.getElementById('submitLow').addEventListener('click', async (e) => {
+    document.getElementById('submitFeedback').addEventListener('click', async (e) => {
       const btn = e.target;
+      const errorEl = document.getElementById('submitError');
+      errorEl.style.display = 'none';
       btn.disabled = true;
       btn.textContent = 'Sending…';
-      const comment = document.getElementById('lowComment').value.trim();
-      await logFeedback(selected, comment);
-      panelLow.classList.remove('active');
+
+      const name = document.getElementById('fName').value.trim();
+      const email = document.getElementById('fEmail').value.trim();
+      const message = document.getElementById('fMessage').value.trim();
+
+      const { error } = await sb.from('feedback').insert({
+        business_id: business.id,
+        rating: selected,
+        name: name || null,
+        email: email || null,
+        comment: message || null
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Send Private Feedback';
+
+      if(error){
+        console.error('Supabase error saving feedback:', error);
+        errorEl.textContent = 'Sorry, something went wrong sending your feedback. Please try again.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      panelForm.classList.remove('active');
       panelDone.classList.add('active');
     });
 
-    document.getElementById('goToGoogle').addEventListener('click', () => {
+    document.getElementById('goToGoogle').addEventListener('click', goToGoogle);
+    document.getElementById('goToGoogleAfter').addEventListener('click', () => {
       window.location.href = business.google_review_url;
     });
   }
