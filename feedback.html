@@ -130,10 +130,10 @@
         <p class="sub" id="subheading">Please let us know how we can improve your experience.</p>
 
         <label for="fName">Your Name</label>
-        <input type="text" id="fName" placeholder="John Doe">
+        <input type="text" id="fName">
 
         <label for="fEmail">Contact Email</label>
-        <input type="email" id="fEmail" placeholder="john@example.com">
+        <input type="email" id="fEmail">
 
         <label for="fMessage">Message</label>
         <textarea id="fMessage" placeholder="What went wrong and how can we fix it?"></textarea>
@@ -146,7 +146,13 @@
 
         <div class="divider">OR</div>
 
-        <button class="action btn-outline" type="button" id="goToGoogle">Leave a Public Google Review</button>
+        <button class="action btn-outline" type="button" id="goToGoogleLow">Leave a Public Google Review</button>
+      </div>
+
+      <div class="panel" id="panelHigh">
+        <h1>So glad you had a great visit!</h1>
+        <p class="sub">We'd love it if you shared that on Google.</p>
+        <button class="action btn-blue" type="button" id="goToGoogleHigh">Leave a Public Google Review</button>
       </div>
 
       <div class="panel" id="panelDone">
@@ -159,6 +165,7 @@
     const starsEl = document.getElementById('stars');
     const promptPanel = document.getElementById('promptPanel');
     const panelForm = document.getElementById('panelForm');
+    const panelHigh = document.getElementById('panelHigh');
     const panelDone = document.getElementById('panelDone');
     const heading = document.getElementById('heading');
     const subheading = document.getElementById('subheading');
@@ -197,15 +204,16 @@
       paintStars(n);
       promptPanel.style.display = 'none';
       panelDone.classList.remove('active');
+      panelForm.classList.remove('active');
+      panelHigh.classList.remove('active');
 
       if(n <= 3){
         heading.textContent = "We want to make this right";
         subheading.textContent = "Please let us know how we can improve your experience.";
+        panelForm.classList.add('active');
       } else {
-        heading.textContent = "So glad you had a great visit!";
-        subheading.textContent = "Feel free to add a note, or head straight to Google below.";
+        panelHigh.classList.add('active');
       }
-      panelForm.classList.add('active');
     }
 
     document.getElementById('submitFeedback').addEventListener('click', async (e) => {
@@ -241,7 +249,8 @@
       panelDone.classList.add('active');
     });
 
-    document.getElementById('goToGoogle').addEventListener('click', goToGoogle);
+    document.getElementById('goToGoogleLow').addEventListener('click', goToGoogle);
+    document.getElementById('goToGoogleHigh').addEventListener('click', goToGoogle);
     document.getElementById('goToGoogleAfter').addEventListener('click', () => {
       window.location.href = business.google_review_url;
     });
