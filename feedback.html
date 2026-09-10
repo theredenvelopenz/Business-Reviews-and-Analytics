@@ -149,12 +149,6 @@
         <button class="action btn-outline" type="button" id="goToGoogleLow">Leave a Public Google Review</button>
       </div>
 
-      <div class="panel" id="panelHigh">
-        <h1>So glad you had a great visit!</h1>
-        <p class="sub">We'd love it if you shared that on Google.</p>
-        <button class="action btn-blue" type="button" id="goToGoogleHigh">Leave a Public Google Review</button>
-      </div>
-
       <div class="panel" id="panelDone">
         <p class="thanks">Thank you — your feedback has been sent to the team.</p>
         <div class="divider">OR</div>
@@ -165,7 +159,6 @@
     const starsEl = document.getElementById('stars');
     const promptPanel = document.getElementById('promptPanel');
     const panelForm = document.getElementById('panelForm');
-    const panelHigh = document.getElementById('panelHigh');
     const panelDone = document.getElementById('panelDone');
     const heading = document.getElementById('heading');
     const subheading = document.getElementById('subheading');
@@ -192,28 +185,28 @@
       });
     }
 
-    function goToGoogle(){
-      // Log the rating for internal analytics even if no private
-      // feedback was submitted, then send them to the real review.
-      sb.from('feedback').insert({ business_id: business.id, rating: selected || null }).then(()=>{});
+    function goToGoogle(rating){
+      // Log the rating for internal analytics, then send them straight
+      // to the real Google review page — no intermediate screen.
+      sb.from('feedback').insert({ business_id: business.id, rating: rating || null }).then(()=>{});
       window.location.href = business.google_review_url;
     }
 
     function selectRating(n){
       selected = n;
       paintStars(n);
+
+      if(n >= 4){
+        goToGoogle(n);
+        return;
+      }
+
       promptPanel.style.display = 'none';
       panelDone.classList.remove('active');
       panelForm.classList.remove('active');
-      panelHigh.classList.remove('active');
-
-      if(n <= 3){
-        heading.textContent = "We want to make this right";
-        subheading.textContent = "Please let us know how we can improve your experience.";
-        panelForm.classList.add('active');
-      } else {
-        panelHigh.classList.add('active');
-      }
+      heading.textContent = "We want to make this right";
+      subheading.textContent = "Please let us know how we can improve your experience.";
+      panelForm.classList.add('active');
     }
 
     document.getElementById('submitFeedback').addEventListener('click', async (e) => {
@@ -249,8 +242,7 @@
       panelDone.classList.add('active');
     });
 
-    document.getElementById('goToGoogleLow').addEventListener('click', goToGoogle);
-    document.getElementById('goToGoogleHigh').addEventListener('click', goToGoogle);
+    document.getElementById('goToGoogleLow').addEventListener('click', () => goToGoogle(selected));
     document.getElementById('goToGoogleAfter').addEventListener('click', () => {
       window.location.href = business.google_review_url;
     });
