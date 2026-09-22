@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Review Funnel — Sign in</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --ink:#2b2620; --paper:#faf7f2; --panel:#ffffff; --line:#e8e1d6;
@@ -34,6 +35,7 @@
     width:100%; font-family:var(--sans); font-weight:600; font-size:0.95rem;
     padding:11px; border:none; border-radius:8px; background:var(--gold); color:#fff; cursor:pointer;
   }
+  button:disabled{ opacity:0.6; cursor:default; }
   .error{ color:#a4453c; font-size:0.82rem; text-align:center; margin:-6px 0 14px; min-height:1em; }
 </style>
 </head>
@@ -50,28 +52,63 @@
 
     <p class="error" id="error"></p>
 
-    <button type="submit">Sign in</button>
+    <button type="submit" id="submitBtn">Sign in</button>
   </form>
 
 <script>
-  // Basic front-end gate only — not real security. Anyone who views this
-  // page's source can see these credentials, and the database itself
-  // has no login requirement behind this — see admin.html's Supabase
-  // policy, which allows writes from anyone holding the public API key.
-  const USERNAME = "admin";
-  const PASSWORD = "admin";
+  /* ============================================================
+     CONFIG — must match the values in admin.html.
+     ============================================================ */
+  const SUPABASE_URL = "https://lhhkbycnstsrlqexugoj.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_tEm1Jerp_SGC0SxtckYAjw_QDf-3taq";
 
-  document.getElementById('loginForm').addEventListener('submit', (e) => {
+  // The visible login is "admin" / your chosen password, but that
+  // maps to a real Supabase Auth account behind the scenes — this
+  // is the account's actual email, used only for authentication,
+  // not a real inbox. Create this exact account in Supabase:
+  // Authentication > Users > Add user.
+  const ADMIN_USERNAME = "admin";
+  const ADMIN_ACCOUNT_EMAIL = "theredenvelopenz@gmail.com";
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Already signed in? Skip straight to admin.
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if(session) window.location.href = 'admin.html';
+  });
+
+  const form = document.getElementById('loginForm');
+  const errorEl = document.getElementById('error');
+  const submitBtn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const user = document.getElementById('user').value.trim();
-    const pass = document.getElementById('pass').value;
+    errorEl.textContent = '';
 
-    if(user === USERNAME && pass === PASSWORD){
-      sessionStorage.setItem('rf_admin_logged_in', '1');
-      window.location.href = 'admin.html';
-    } else {
-      document.getElementById('error').textContent = 'Incorrect username or password.';
+    const username = document.getElementById('user').value.trim();
+    const password = document.getElementById('pass').value;
+
+    if(username.toLowerCase() !== ADMIN_USERNAME){
+      errorEl.textContent = 'Incorrect username or password.';
+      return;
     }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+
+    const { error } = await sb.auth.signInWithPassword({
+      email: ADMIN_ACCOUNT_EMAIL,
+      password
+    });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign in';
+
+    if(error){
+      errorEl.textContent = 'Incorrect username or password.';
+      return;
+    }
+    window.location.href = 'admin.html';
   });
 </script>
 </body>
